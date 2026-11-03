@@ -20,14 +20,12 @@ const dbPool = new Pool({
   idleTimeoutMillis: 30000,
 });
 
-// Configure Nodemailer SMTP Transporter
+// Configure Nodemailer Gmail SMTP Transporter (SYSTEM_GMAIL & SYSTEM_APP_PASSWORD)
 const emailTransporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.sendgrid.net',
-  port: Number(process.env.SMTP_PORT) || 587,
-  secure: false,
+  service: 'gmail',
   auth: {
-    user: process.env.SMTP_USER || 'apikey',
-    pass: process.env.SMTP_PASSWORD || 'SG.mock_api_key_zest_production',
+    user: process.env.SYSTEM_GMAIL || 'ajubaid.ik@gmail.com',
+    pass: (process.env.SYSTEM_APP_PASSWORD || '').replace(/\s+/g, ''),
   },
 });
 

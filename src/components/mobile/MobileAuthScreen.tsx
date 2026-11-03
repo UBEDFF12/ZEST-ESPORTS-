@@ -56,34 +56,45 @@ export const MobileAuthScreen: React.FC = () => {
     return () => clearInterval(interval);
   }, [otpStep, otpTimer]);
 
-  const handleSendOtp = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSendOtp = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setErrorMsg(null);
+    setSuccessMsg(null);
     setOtpLoading(true);
 
-    const res = sendPhoneOtp(phoneNumber);
-    setOtpLoading(false);
+    try {
+      const res = await sendPhoneOtp(phoneNumber);
+      setOtpLoading(false);
 
-    if (res.success) {
-      setOtpStep('enter_otp');
-      setOtpTimer(30);
-      setSuccessMsg(res.message);
-      setOtpValue('123456'); // Pre-fill demo OTP for convenience
-    } else {
-      setErrorMsg(res.message);
+      if (res.success) {
+        setOtpStep('enter_otp');
+        setOtpTimer(45);
+        setSuccessMsg(res.message);
+        setOtpValue('');
+      } else {
+        setErrorMsg(res.message);
+      }
+    } catch (err: any) {
+      setOtpLoading(false);
+      setErrorMsg(err?.message || 'Error triggering SMS OTP');
     }
   };
 
-  const handleVerifyOtp = (e: React.FormEvent) => {
+  const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setOtpLoading(true);
 
-    const res = loginWithPhoneOtp(phoneNumber, otpValue);
-    setOtpLoading(false);
+    try {
+      const res = await loginWithPhoneOtp(phoneNumber, otpValue);
+      setOtpLoading(false);
 
-    if (!res.success) {
-      setErrorMsg(res.message);
+      if (!res.success) {
+        setErrorMsg(res.message);
+      }
+    } catch (err: any) {
+      setOtpLoading(false);
+      setErrorMsg(err?.message || 'OTP verification failed');
     }
   };
 
@@ -200,7 +211,7 @@ export const MobileAuthScreen: React.FC = () => {
               <form onSubmit={handleSendOtp} className="space-y-4">
                 <div>
                   <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block mb-1.5">
-                    Enter Mobile Number
+                    Enter Mobile Number (Firebase Phone Auth)
                   </label>
                   <div className="flex rounded-xl bg-[#090D16] border border-white/10 overflow-hidden focus-within:border-[#FF5722]">
                     <span className="px-3 py-2.5 bg-white/5 border-r border-white/10 text-xs font-mono font-bold text-slate-300 flex items-center">
@@ -216,10 +227,13 @@ export const MobileAuthScreen: React.FC = () => {
                       className="w-full px-3 py-2.5 text-white font-mono text-sm tracking-wider bg-transparent focus:outline-none"
                     />
                   </div>
-                  <span className="text-[10px] text-slate-500 mt-1 block">
-                    We will dispatch a 6-digit OTP verification token.
+                  <span className="text-[10px] text-slate-400 mt-1 block">
+                    Dispatches a real SMS OTP via Firebase Authentication &amp; cellular carrier.
                   </span>
                 </div>
+
+                {/* Firebase reCAPTCHA Verifier Container for Web */}
+                <div id="recaptcha-container" className="my-2 flex justify-center"></div>
 
                 <button
                   type="submit"
@@ -227,13 +241,16 @@ export const MobileAuthScreen: React.FC = () => {
                   className="w-full py-3 rounded-xl bg-[#FF5722] hover:bg-[#FF5722]/90 disabled:opacity-40 text-white font-gaming font-black text-xs tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-[#FF5722]/30 active:scale-98 transition-all"
                 >
                   <KeyRound className="w-4 h-4" />
-                  {otpLoading ? 'SENDING OTP...' : 'GET OTP VERIFICATION CODE'}
+                  {otpLoading ? 'TRIGGERING FIREBASE SMS...' : 'SEND REAL SMS OTP (FIREBASE)'}
                 </button>
               </form>
             ) : (
               <form onSubmit={handleVerifyOtp} className="space-y-4">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="text-slate-400">Verifying +91 {phoneNumber}</span>
+                  <div className="flex items-center gap-1.5 text-emerald-400">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                    <span className="font-mono text-[11px]">SMS Dispatched: +91 {phoneNumber}</span>
+                  </div>
                   <button
                     type="button"
                     onClick={() => setOtpStep('enter_phone')}
@@ -245,7 +262,7 @@ export const MobileAuthScreen: React.FC = () => {
 
                 <div>
                   <label className="text-xs font-bold text-slate-300 uppercase tracking-wider block mb-1.5">
-                    Enter 6-Digit OTP
+                    Enter 6-Digit SMS Code
                   </label>
                   <input
                     type="text"
@@ -253,20 +270,27 @@ export const MobileAuthScreen: React.FC = () => {
                     required
                     value={otpValue}
                     onChange={(e) => setOtpValue(e.target.value.replace(/\D/g, ''))}
-                    placeholder="123456"
+                    placeholder="Enter SMS OTP"
                     className="w-full px-3.5 py-3 rounded-xl bg-[#090D16] border border-[#FF5722] text-white font-mono text-xl text-center tracking-[0.5em] focus:outline-none"
                   />
                   <div className="flex items-center justify-between text-[11px] text-slate-400 mt-1.5">
-                    <span>Demo OTP code: <strong className="text-[#00E5FF]">123456</strong></span>
+                    <button
+                      type="button"
+                      onClick={() => setOtpValue('123456')}
+                      className="text-slate-400 hover:text-[#00E5FF] text-[10px] underline"
+                      title="Quick fill test code"
+                    >
+                      Bypass / Demo OTP: 123456
+                    </button>
                     {otpTimer > 0 ? (
                       <span className="font-mono text-slate-500">{otpTimer}s remaining</span>
                     ) : (
                       <button
                         type="button"
-                        onClick={handleSendOtp}
+                        onClick={() => handleSendOtp()}
                         className="text-[#00E676] font-bold hover:underline"
                       >
-                        Resend OTP
+                        Resend SMS
                       </button>
                     )}
                   </div>
@@ -278,7 +302,7 @@ export const MobileAuthScreen: React.FC = () => {
                   className="w-full py-3 rounded-xl bg-[#00E676] hover:bg-[#00E676]/90 disabled:opacity-40 text-[#090D16] font-gaming font-black text-xs tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-[#00E676]/30 active:scale-98 transition-all"
                 >
                   <ShieldCheck className="w-4 h-4" />
-                  {otpLoading ? 'VERIFYING...' : 'VERIFY & ENTER ARENA'}
+                  {otpLoading ? 'CONFIRMING WITH FIREBASE...' : 'VERIFY OTP & ENTER TOURNAMENTS'}
                 </button>
               </form>
             )}

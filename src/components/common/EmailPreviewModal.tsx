@@ -26,11 +26,22 @@ export const EmailPreviewModal: React.FC = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-white text-base">Nodemailer Automated Email Dispatcher</h3>
-                <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-[#00E676]/20 text-[#00E676] border border-[#00E676]/30">
-                  SENT 200 OK
-                </span>
+                {emailReceiptModal.mode === 'real_smtp' ? (
+                  <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-[#00E676]/20 text-[#00E676] border border-[#00E676]/30 flex items-center gap-1">
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#00E676] animate-pulse"></span>
+                    REAL GMAIL SMTP SENT 200 OK
+                  </span>
+                ) : (
+                  <span className="text-[10px] px-2 py-0.5 rounded font-mono font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                    PREVIEW GENERATED
+                  </span>
+                )}
               </div>
-              <p className="text-xs text-slate-400">Delivered directly to {emailReceiptModal.toEmail}</p>
+              <p className="text-xs text-slate-400">
+                {emailReceiptModal.mode === 'real_smtp'
+                  ? `Delivered via Google Mail SMTP to ${emailReceiptModal.toEmail}`
+                  : `Dispatched preview to ${emailReceiptModal.toEmail} (Configure SYSTEM_GMAIL in .env for live inbox delivery)`}
+              </p>
             </div>
           </div>
           <button
@@ -45,12 +56,20 @@ export const EmailPreviewModal: React.FC = () => {
         <div className="px-6 py-3 bg-[#0B111E] border-b border-white/5 text-xs text-slate-400 space-y-1 font-mono">
           <div className="flex items-center justify-between">
             <div>
-              <span className="text-slate-500">From:</span> <span className="text-white">Zest Esports Payouts &lt;payouts@zestesports.gg&gt;</span>
+              <span className="text-slate-500">From:</span>{' '}
+              <span className="text-white">
+                {emailReceiptModal.sender
+                  ? `"Zest Esports Payouts" <${emailReceiptModal.sender}>`
+                  : 'Zest Esports Payouts <payouts@zestesports.gg>'}
+              </span>
             </div>
             <span className="text-slate-500">{emailReceiptModal.timestamp}</span>
           </div>
           <div>
             <span className="text-slate-500">To:</span> <span className="text-[#00E5FF]">{emailReceiptModal.toEmail}</span>
+            {emailReceiptModal.messageId && (
+              <span className="ml-3 text-slate-500 text-[10px]">Message-ID: {emailReceiptModal.messageId}</span>
+            )}
           </div>
           <div>
             <span className="text-slate-500">Subject:</span>{' '}
