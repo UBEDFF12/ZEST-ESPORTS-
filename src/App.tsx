@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { EsportsProvider, useEsports } from './context/EsportsContext';
 import { MobileAppFrame } from './components/mobile/MobileAppFrame';
-import { AdminLoginScreen } from './components/admin/AdminLoginScreen';
+import { AdminLoginScreen, PRIMARY_SUPER_ADMIN } from './components/admin/AdminLoginScreen';
 import { AdminDashboard } from './components/admin/AdminDashboard';
 import { DeliverablesHub } from './components/deliverables/DeliverablesHub';
 import { EmailPreviewModal } from './components/common/EmailPreviewModal';
 import { ShieldCheck, LogOut, Code2, LayoutDashboard, Flame, ExternalLink, ArrowLeft } from 'lucide-react';
+import { signOutFirebase } from './lib/firebase';
 
 // Route checking helper supporting both standard pathnames (/admin) and hashes (#admin)
 const checkIsAdminRoute = () => {
@@ -22,6 +23,7 @@ const MainShell: React.FC = () => {
   const { firebaseConnected, firebaseProjectId, transactions } = useEsports();
   const [isAdminRoute, setIsAdminRoute] = useState(checkIsAdminRoute);
   const [isAdminUnlocked, setIsAdminUnlocked] = useState(false);
+  const [adminUserEmail, setAdminUserEmail] = useState<string | null>(null);
   const [adminTab, setAdminTab] = useState<'dashboard' | 'deliverables'>('dashboard');
 
   // Listen to browser navigation changes (popstate & hashchange)
@@ -39,8 +41,14 @@ const MainShell: React.FC = () => {
     };
   }, []);
 
-  const handleExitAdmin = () => {
+  const handleExitAdmin = async () => {
     setIsAdminUnlocked(false);
+    setAdminUserEmail(null);
+    try {
+      await signOutFirebase();
+    } catch (e) {
+      // ignore
+    }
     // Navigate back to public route
     window.location.hash = '';
     window.history.pushState({}, '', '/');
@@ -62,11 +70,14 @@ const MainShell: React.FC = () => {
     );
   }
 
-  // SECRET /ADMIN ROUTE: PIN Protected (PIN: 1234)
+  // RESTRICTED /ADMIN ROUTE: Protected by Google Sign-In with Super Admin Whitelist
   if (!isAdminUnlocked) {
     return (
       <AdminLoginScreen
-        onSuccess={() => setIsAdminUnlocked(true)}
+        onSuccess={(email) => {
+          setAdminUserEmail(email);
+          setIsAdminUnlocked(true);
+        }}
         onExit={handleExitAdmin}
       />
     );
@@ -98,9 +109,9 @@ const MainShell: React.FC = () => {
                   {firebaseConnected ? 'FIREBASE SECURE' : 'OFFLINE'}
                 </span>
                 <span>•</span>
-                <span className="text-[#00E5FF]">{firebaseProjectId}</span>
-                <span>•</span>
-                <span className="text-slate-400">PIN: 1234 Authenticated</span>
+                <span className="text-[#00E5FF] font-semibold">
+                  Super Admin: {adminUserEmail || PRIMARY_SUPER_ADMIN}
+                </span>
               </div>
             </div>
           </div>
@@ -136,14 +147,14 @@ const MainShell: React.FC = () => {
               </button>
             </div>
 
-            {/* Exit Admin / Return to Gamer App */}
+            {/* Exit Admin / Sign Out */}
             <button
               onClick={handleExitAdmin}
-              className="px-3.5 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-slate-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
-              title="Return to Public Gamer App"
+              className="px-3.5 py-2 rounded-xl bg-red-500/10 hover:bg-red-500/20 border border-red-500/20 text-red-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors"
+              title="Sign Out Admin & Return to Public Gamer App"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Exit to App</span>
+              <LogOut className="w-3.5 h-3.5 text-red-400" />
+              <span>Sign Out</span>
             </button>
           </div>
         </div>
