@@ -1,0 +1,6 @@
+{
+  "name": "ZEST ESPORTS - Tournament Ecosystem",
+  "description": "Production-ready Esports Tournament Platform with Android Gamer App, Live Room Reveal, Dual-Balance Wallet (UPI/Google Play Code), and Master Admin Dashboard with Instant Prize Distribution.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

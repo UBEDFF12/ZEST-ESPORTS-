@@ -1,0 +1,121 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "Gamer profile containing in-game Free Fire identifiers, dual wallet balances, and career tournament statistics.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique user ID" },
+        "name": { "type": "string", "description": "Full display name" },
+        "email": { "type": "string", "description": "User email address", "format": "email" },
+        "phone": { "type": "string", "description": "10-digit mobile number" },
+        "avatarUrl": { "type": "string", "description": "Avatar image URL" },
+        "freeFireIgn": { "type": "string", "description": "Free Fire In-Game Name" },
+        "freeFireUid": { "type": "string", "description": "Free Fire In-Game UID" },
+        "depositBalance": { "type": "number", "description": "Non-withdrawable cash reserved for match buy-ins" },
+        "winningsBalance": { "type": "number", "description": "100% withdrawable cash won from match ranks and kills" },
+        "matchesPlayed": { "type": "number", "description": "Total matches played" },
+        "totalKills": { "type": "number", "description": "Total kills accumulated" },
+        "totalWins": { "type": "number", "description": "Total tournament first place wins" },
+        "winRate": { "type": "number", "description": "Win percentage rate" },
+        "totalEarnings": { "type": "number", "description": "Total prize money won in INR" },
+        "referralCode": { "type": "string", "description": "Unique referral code" },
+        "referralEarnings": { "type": "number", "description": "Total earnings from referrals" },
+        "isBanned": { "type": "boolean", "description": "Flag indicating if account is suspended" },
+        "createdAt": { "type": "string", "description": "ISO timestamp of account creation" }
+      },
+      "required": ["id", "freeFireIgn", "freeFireUid", "depositBalance", "winningsBalance"]
+    },
+    "Tournament": {
+      "title": "Tournament",
+      "description": "Esports competitive lobby instance with map, entry fee, prize pool, and room credentials.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique tournament match ID" },
+        "title": { "type": "string", "description": "Title of tournament" },
+        "mode": { "type": "string", "description": "Tournament mode (Classic BR, CS 1v1, CS 4v4, Lone Wolf)" },
+        "map": { "type": "string", "description": "Free Fire map name" },
+        "bannerUrl": { "type": "string", "description": "Match banner image URL" },
+        "entryFee": { "type": "number", "description": "Entry fee in INR" },
+        "perKillPrize": { "type": "number", "description": "Bounty per kill in INR" },
+        "totalPrizePool": { "type": "number", "description": "Total prize pool allocated" },
+        "maxSlots": { "type": "number", "description": "Maximum participant capacity" },
+        "bookedSlotsCount": { "type": "number", "description": "Current number of booked slots" },
+        "scheduleTime": { "type": "string", "description": "Match start schedule ISO timestamp" },
+        "roomId": { "type": "string", "description": "Custom room ID (unlocked 15m prior to start)" },
+        "roomPassword": { "type": "string", "description": "Custom room password (unlocked 15m prior to start)" },
+        "isRoomRevealed": { "type": "boolean", "description": "Flag indicating if credentials have been revealed" },
+        "status": { "type": "string", "description": "Match status (open, room_unlocked, live, completed)" }
+      },
+      "required": ["id", "title", "mode", "entryFee", "totalPrizePool", "maxSlots", "scheduleTime", "status"]
+    },
+    "TournamentSlot": {
+      "title": "TournamentSlot",
+      "description": "Atomic participant slot inside a tournament match.",
+      "type": "object",
+      "properties": {
+        "slotNumber": { "type": "number", "description": "Slot index from 1 to maxSlots" },
+        "userId": { "type": "string", "description": "User ID of booked gamer" },
+        "playerIgn": { "type": "string", "description": "Free Fire IGN of player" },
+        "playerUid": { "type": "string", "description": "Free Fire UID of player" },
+        "isBooked": { "type": "boolean", "description": "Whether slot is occupied" },
+        "bookedAt": { "type": "string", "description": "Timestamp when reservation was made" }
+      },
+      "required": ["slotNumber", "isBooked"]
+    },
+    "Transaction": {
+      "title": "Transaction",
+      "description": "Immutable financial audit ledger entry for deposits, withdrawals, entry fees, and prize credits.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique transaction ID" },
+        "userId": { "type": "string", "description": "Target gamer ID" },
+        "userName": { "type": "string", "description": "Player name or IGN" },
+        "type": { "type": "string", "description": "deposit, withdrawal, entry_fee, prize_winnings, referral_bonus" },
+        "amount": { "type": "number", "description": "Transaction amount in INR" },
+        "walletSource": { "type": "string", "description": "deposit, winnings, or both" },
+        "status": { "type": "string", "description": "pending, completed, rejected" },
+        "referenceId": { "type": "string", "description": "UTR, Bank Payout Ref, or Redeem Code" },
+        "description": { "type": "string", "description": "Description of the event" },
+        "timestamp": { "type": "string", "description": "ISO timestamp of transaction" }
+      },
+      "required": ["id", "userId", "type", "amount", "walletSource", "status", "referenceId", "timestamp"]
+    },
+    "RedeemCode": {
+      "title": "RedeemCode",
+      "description": "Google Play Store gift card voucher code for automated FIFO distribution.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "description": "Unique redeem code inventory ID" },
+        "denomination": { "type": "number", "description": "Value in INR (10, 30, 80, 100, 250)" },
+        "code": { "type": "string", "description": "16-character voucher code" },
+        "isUsed": { "type": "boolean", "description": "Whether voucher has been claimed" },
+        "usedByUserId": { "type": "string", "description": "User ID of recipient" },
+        "sentToEmail": { "type": "string", "description": "Gmail address code was delivered to" }
+      },
+      "required": ["id", "denomination", "code", "isUsed"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": { "$ref": "#/entities/User" },
+      "description": "Stores user profiles, Free Fire credentials, and dual wallet balances."
+    },
+    "/tournaments/{tournamentId}": {
+      "schema": { "$ref": "#/entities/Tournament" },
+      "description": "Stores tournament matches, configurations, and room credentials."
+    },
+    "/tournaments/{tournamentId}/slots/{slotId}": {
+      "schema": { "$ref": "#/entities/TournamentSlot" },
+      "description": "Atomic slots within a tournament."
+    },
+    "/transactions/{transactionId}": {
+      "schema": { "$ref": "#/entities/Transaction" },
+      "description": "Immutable financial audit logs."
+    },
+    "/redeem_codes/{codeId}": {
+      "schema": { "$ref": "#/entities/RedeemCode" },
+      "description": "Preloaded Google Play redeem codes for automated queue distribution."
+    }
+  }
+}

@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --bg-obsidian: #090D16;
+    --card-surface: #121824;
+    --card-surface-elevated: #171F2F;
+    --neon-orange: #FF5722;
+    --neon-cyan: #00E5FF;
+    --neon-green: #00E676;
+    --neon-amber: #FFB300;
+  }
+}
+
+.font-gaming {
+  font-family: 'Chakra Petch', 'Rajdhani', sans-serif;
+}
+
+.font-rajdhani {
+  font-family: 'Rajdhani', sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #090D16;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1E293B;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #FF5722;
+}
+
+.glow-orange {
+  box-shadow: 0 0 20px -3px rgba(255, 87, 34, 0.35);
+}
+
+.glow-cyan {
+  box-shadow: 0 0 20px -3px rgba(0, 229, 255, 0.35);
+}
+
+.glow-green {
+  box-shadow: 0 0 20px -3px rgba(0, 230, 118, 0.35);
+}
+
+.glass-card {
+  background: rgba(18, 24, 36, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-card-hover:hover {
+  border-color: rgba(255, 87, 34, 0.4);
+  box-shadow: 0 4px 20px -4px rgba(255, 87, 34, 0.2);
+}
